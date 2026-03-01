@@ -1,0 +1,5 @@
+{
+  "description": "A modern habit tracker and task manager built with Next.js and Supabase.",
+  "requestFramePermissions": [],
+  "name": "Habit tracker"
+}
