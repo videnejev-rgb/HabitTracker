@@ -67,6 +67,18 @@ export default function DailyView() {
     return Math.round((dailyHabits.filter(h => h.done).length / dailyHabits.length) * 100);
   }, [dailyHabits]);
 
+  const todoProgress = useMemo(() => {
+    if (dailyTodos.length === 0) return 0;
+    return Math.round((dailyTodos.filter(t => t.done).length / dailyTodos.length) * 100);
+  }, [dailyTodos]);
+
+  const totalProgress = useMemo(() => {
+    const totalItems = dailyHabits.length + dailyTodos.length;
+    if (totalItems === 0) return 0;
+    const completedItems = dailyHabits.filter(h => h.done).length + dailyTodos.filter(t => t.done).length;
+    return Math.round((completedItems / totalItems) * 100);
+  }, [dailyHabits, dailyTodos]);
+
   const handleDateOffset = (offset: number) => {
     const date = new Date(selectedDate);
     date.setDate(date.getDate() + offset);
@@ -276,15 +288,15 @@ export default function DailyView() {
                   <circle cx="50" cy="50" r="42" className="stroke-slate-100 fill-none" strokeWidth="12" />
                   <motion.circle 
                     cx="50" cy="50" r="42" 
-                    className="stroke-indigo-600 fill-none" 
+                    className="fill-none stroke-indigo-600"
                     strokeWidth="12" 
                     strokeLinecap="round"
                     initial={{ strokeDasharray: "0 264" }}
-                    animate={{ strokeDasharray: `${(progress / 100) * 264} 264` }}
+                    animate={{ strokeDasharray: `${(totalProgress / 100) * 264} 264` }}
                   />
                 </svg>
                 <div className="absolute inset-0 flex items-center justify-center">
-                  <span className="text-[9px] md:text-[10px] font-black text-slate-900">{progress}%</span>
+                  <span className="text-[9px] md:text-[10px] font-black text-slate-900">{totalProgress}%</span>
                 </div>
               </div>
             </button>
@@ -392,7 +404,10 @@ export default function DailyView() {
                   <ListTodo className="w-5 h-5 md:w-6 md:h-6 text-indigo-600" />
                 </div>
                 <div>
-                  <h2 className="text-xl md:text-2xl font-black text-slate-900 tracking-tight">Tasks</h2>
+                  <div className="flex items-center gap-2">
+                    <h2 className="text-xl md:text-2xl font-black text-slate-900 tracking-tight">Tasks</h2>
+                    <span className="px-2 py-0.5 bg-indigo-100 text-indigo-700 text-[10px] font-black rounded-full uppercase tracking-wider">{todoProgress}%</span>
+                  </div>
                   <p className="text-[10px] md:text-xs text-slate-500 font-bold uppercase tracking-widest">Focus on what matters</p>
                 </div>
               </div>
@@ -528,9 +543,9 @@ export default function DailyView() {
                 <X className="w-6 h-6 text-slate-400" />
               </button>
               
-              <h3 className="text-slate-400 font-black uppercase tracking-[0.2em] text-[10px] md:text-xs mb-10">Daily Completion</h3>
+              <h3 className="text-slate-400 font-black uppercase tracking-[0.2em] text-[10px] md:text-xs mb-10">Overall Daily Progress</h3>
               
-              <div className="relative w-48 h-48 md:w-64 md:h-64 mx-auto mb-10">
+              <div className="relative w-48 h-48 md:w-56 md:h-56 mx-auto mb-12">
                 <svg className="w-full h-full -rotate-90" viewBox="0 0 100 100">
                   <circle cx="50" cy="50" r="42" className="stroke-slate-100 fill-none" strokeWidth="10" />
                   <motion.circle 
@@ -539,24 +554,35 @@ export default function DailyView() {
                     strokeWidth="10" 
                     strokeLinecap="round"
                     initial={{ strokeDasharray: "0 264" }}
-                    animate={{ strokeDasharray: `${(progress / 100) * 264} 264` }}
+                    animate={{ strokeDasharray: `${(totalProgress / 100) * 264} 264` }}
                     transition={{ duration: 1.5, ease: "circOut" }}
                   />
                 </svg>
                 <div className="absolute inset-0 flex flex-col items-center justify-center">
-                  <span className="text-5xl md:text-7xl font-black text-slate-900 tracking-tighter">{progress}%</span>
-                  <span className="text-[10px] md:text-xs font-black text-slate-400 uppercase tracking-widest mt-2">Done</span>
+                  <span className="text-5xl md:text-6xl font-black text-slate-900 tracking-tighter">{totalProgress}%</span>
+                  <span className="text-[10px] md:text-xs font-black text-slate-400 uppercase tracking-widest mt-2">Total Done</span>
                 </div>
               </div>
 
-              <div className="space-y-3">
+              <div className="grid grid-cols-2 gap-6 mb-10">
+                <div className="p-4 rounded-2xl bg-slate-50 border border-slate-100">
+                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Habits</p>
+                  <p className="text-xl font-black text-indigo-600">{progress}%</p>
+                </div>
+                <div className="p-4 rounded-2xl bg-slate-50 border border-slate-100">
+                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Tasks</p>
+                  <p className="text-xl font-black text-purple-600">{todoProgress}%</p>
+                </div>
+              </div>
+
+              <div className="space-y-3 pt-6 border-t border-slate-100">
                 <p className="text-slate-900 font-black text-xl md:text-2xl leading-tight">
-                  {progress === 100 ? "Legendary!" : progress > 75 ? "Almost there!" : progress > 50 ? "Great work!" : progress > 0 ? "Keep going!" : "Let's start!"}
+                  {totalProgress === 100 ? "Absolute Legend! 🏆" : totalProgress > 75 ? "Incredible Momentum!" : "Keep the flow going!"}
                 </p>
                 <p className="text-slate-500 text-sm md:text-base font-medium">
-                  {progress === 100 
-                    ? "You've completed everything! 🏆" 
-                    : `${dailyHabits.filter(h => h.done).length} of ${dailyHabits.length} habits finished.`}
+                  {totalProgress === 100 
+                    ? "You've conquered the day completely!" 
+                    : `${dailyHabits.filter(h => h.done).length + dailyTodos.filter(t => t.done).length} of ${dailyHabits.length + dailyTodos.length} total items completed.`}
                 </p>
               </div>
             </motion.div>
